@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <OutputType>WinExe</OutputType>
+    <UseWindowsForms>true</UseWindowsForms>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblyName>SchLibSearchPaths-Setup</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Setup.cs" />
+    <EmbeddedResource Include="$(PayloadZip)" LogicalName="payload.zip" Condition="'$(PayloadZip)' != ''" />
+    <Reference Include="System.Xml.Linq;System.Web.Extensions;System.IO.Compression" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net48" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+  <Target Name="PreparePayload" BeforeTargets="CoreCompile">
+    <Error Condition="!Exists('$(PayloadZip)')" Text="Provide -p:PayloadZip with the extension payload ZIP, or use Build-Installer.ps1." />
+    <GetFileHash Files="$(PayloadZip)" Algorithm="SHA256">
+      <Output TaskParameter="Items" ItemName="PayloadHash" />
+    </GetFileHash>
+    <WriteLinesToFile File="$(IntermediateOutputPath)PayloadManifest.cs" Overwrite="true"
+      Lines="namespace LibrarySearchPathsSetup { internal static class PayloadManifest { internal const string Sha256 = &quot;%(PayloadHash.FileHash)&quot;%3B } }" />
+    <ItemGroup>
+      <Compile Include="$(IntermediateOutputPath)PayloadManifest.cs" />
+    </ItemGroup>
+  </Target>
+</Project>

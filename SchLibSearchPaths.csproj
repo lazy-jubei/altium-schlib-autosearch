@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <UseWPF>true</UseWPF>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <PlatformTarget>x64</PlatformTarget>
+    <Version>1.1.0</Version>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AltiumSystem Condition="'$(AltiumSystem)' == ''">C:\Program Files\Altium\AD26\System</AltiumSystem>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="SearchPathLibraries.cs;LibraryPanel.cs" />
+    <Reference Include="Altium.SDK;Altium.SDK.Interfaces;Altium.Edp.Interfaces;Altium.Dxp.Interfaces;Altium.ActiveBOM.Contracts;Altium.BOM.Contracts;Altium.Edp.Classes;Altium.WorkspaceManager.Core">
+      <HintPath>$(AltiumSystem)/%(Identity).dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>
