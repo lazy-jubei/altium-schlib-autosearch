@@ -1,0 +1,22 @@
+ClientInsFile 1.0
+Server
+    EditorName        = 'SchLibSearchPaths'
+    EditorExePath     = 'SchLibSearchPaths.dll'
+    EditorDescription = 'Automatically register schematic libraries from the active project search paths.'
+    Version           = 'Version 1.1.0.0'
+    Date              = '31-Oct-2026'
+    SystemExtension   = True
+End
+PanelInfo
+    Name              = 'SchLibSearchPaths'
+    Category          = '&System'
+    Bitmap            = ''
+    Hotkey            = ''
+    ButtonVisible     = True
+    CanDockVertical   = True
+    CanDockHorizontal = True
+End
+Command Name = 'ShowPanel' LongSummary = 'Show the Library Search Paths checkbox panel.' End
+Command Name = 'Refresh' LongSummary = 'Enable and refresh schematic libraries from the current project search paths.' End
+Command Name = 'Disable' LongSummary = 'Disable automatic library registration and remove only registrations owned by this extension.' End
+Command Name = 'Status' LongSummary = 'Show project search path symbol status.' End
