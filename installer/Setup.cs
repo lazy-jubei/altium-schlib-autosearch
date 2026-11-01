@@ -73,7 +73,7 @@ namespace LibrarySearchPathsSetup {
    string temp=target.RegistryPath+".schlib-"+Guid.NewGuid().ToString("N")+".tmp";
    try {
     if(!remove){
-     foreach(var file in payload)File.WriteAllBytes(Path.Combine(full,file.Key),file.Value);
+     foreach(string file in Files)File.WriteAllBytes(Path.Combine(full,file),payload[file]);
      // The rejected experimental menu resource must never be loaded again.
      string oldMenu=Path.Combine(full,"SchLibSearchPaths.rcs");if(File.Exists(oldMenu))File.Move(oldMenu,Path.Combine(backup,"obsolete-menu.rcs.txt"));
      var item=new XElement("Item",new XAttribute("HRID",Hrid),new XAttribute("Guid","E3DE8765-9D4A-4E57-9CCF-82D6C9A1CEB4"));
@@ -101,7 +101,7 @@ namespace LibrarySearchPathsSetup {
    byte[] registryBytes=File.ReadAllBytes(registry);if(registryBytes.Length>2&&registryBytes[0]==239&&registryBytes[1]==187&&registryBytes[2]==191)throw new Exception("Altium registry must use UTF-8 without a BOM.");
    if(Directory.GetFiles(destination,"*.ins",SearchOption.AllDirectories).Length!=1)throw new Exception("Backup registrations leaked into the live extension folder.");
    if(doc.Root.Elements("Item").Count(e=>(string)e.Attribute("HRID")==Hrid)!=1||doc.Root.Elements("Item").Count(e=>(string)e.Attribute("HRID")=="ExistingPlugin")!=1)throw new Exception("Registry preservation/idempotency failed.");
-   foreach(var file in Payload())if(Hash(File.ReadAllBytes(Path.Combine(destination,file.Key)))!=Hash(file.Value))throw new Exception("Payload copy failed.");
+   var expected=Payload();foreach(string file in Files)if(Hash(File.ReadAllBytes(Path.Combine(destination,file)))!=Hash(expected[file]))throw new Exception("Payload copy failed.");
    if(Hash(File.ReadAllBytes(Path.Combine(destination,"state.json")))!=stateHash)throw new Exception("User settings changed.");
    File.WriteAllText(Path.Combine(destination,"state.json"),"{\"Enabled\":true,\"OwnedLibraries\":[\"C:\\\\example.SchLib\"]}");
    bool blocked=false;try{Apply(target,destination,true);}catch(InvalidOperationException){blocked=true;}if(!blocked)throw new Exception("Unsafe uninstall was not blocked.");
