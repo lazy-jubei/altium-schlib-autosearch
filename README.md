@@ -1,5 +1,7 @@
 # altium-schlib-autosearch
 
+[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=lazy-jubei_altium-schlib-autosearch&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=lazy-jubei_altium-schlib-autosearch)
+
 Automatically finds and adds `.SchLib` libraries from folders and subfolders, alongside `.PcbLib` files resolved through Altium’s project search paths.
 
 ## Install
