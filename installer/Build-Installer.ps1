@@ -10,7 +10,7 @@ Compress-Archive -LiteralPath $files -DestinationPath $payload -Force
 $hash=(Get-FileHash -LiteralPath $payload).Hash
 [IO.File]::WriteAllText($manifest,('namespace LibrarySearchPathsSetup { internal static class PayloadManifest { internal const string Sha256="'+$hash+'"; } }'))
 $compiler=Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'
-$output=Join-Path $package 'SchLibSearchPaths-Setup-1.1.0.exe'
+$output=Join-Path $package 'SchLibSearchPaths-Setup-1.1.1.exe'
 & $compiler /nologo /target:winexe /platform:anycpu /optimize+ /reference:System.Windows.Forms.dll /reference:System.Drawing.dll /reference:System.Xml.Linq.dll /reference:System.Web.Extensions.dll /reference:System.IO.Compression.dll ('/out:'+$output) ('/resource:'+$payload+',payload.zip') (Join-Path $PSScriptRoot 'Setup.cs') $manifest
 if($LASTEXITCODE -ne 0){throw 'Installer compilation failed.'}
 Get-Item -LiteralPath $output | Select-Object FullName,Length

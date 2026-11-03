@@ -15,15 +15,15 @@ using System.Xml;
 using Microsoft.Win32;
 
 [assembly:AssemblyTitle("Library Search Paths Setup")]
-[assembly:AssemblyVersion("1.1.0.0")]
-[assembly:AssemblyFileVersion("1.1.0.0")]
+[assembly:AssemblyVersion("1.1.1.0")]
+[assembly:AssemblyFileVersion("1.1.1.0")]
 namespace LibrarySearchPathsSetup {
  internal sealed class Target {
   public string RegistryPath,DisplayName;
   public override string ToString(){return DisplayName;}
  }
  internal static class Engine {
-  internal const string Hrid="SchLibSearchPaths",Version="1.1.0.0";
+  internal const string Hrid="SchLibSearchPaths",Version="1.1.1.0";
   internal static readonly string DefaultDestination=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Altium","SchLibSearchPaths");
   internal static readonly string[] Files={"SchLibSearchPaths.dll","SchLibSearchPaths.ins","Control.ps1","README.md"};
   internal static string Hash(byte[] data){using(var sha=SHA256.Create())return BitConverter.ToString(sha.ComputeHash(data)).Replace("-","");}
@@ -73,6 +73,7 @@ namespace LibrarySearchPathsSetup {
    string temp=target.RegistryPath+".schlib-"+Guid.NewGuid().ToString("N")+".tmp";
    try {
     if(!remove){
+     Directory.CreateDirectory(full);
      foreach(string file in Files)File.WriteAllBytes(Path.Combine(full,file),payload[file]);
      // The rejected experimental menu resource must never be loaded again.
      string oldMenu=Path.Combine(full,"SchLibSearchPaths.rcs");if(File.Exists(oldMenu))File.Move(oldMenu,Path.Combine(backup,"obsolete-menu.rcs.txt"));
@@ -93,10 +94,13 @@ namespace LibrarySearchPathsSetup {
   }
   internal static void SelfTest(string folder){
    folder=Path.GetFullPath(folder);if(Directory.Exists(folder))throw new InvalidOperationException("The test folder must not already exist.");Directory.CreateDirectory(folder);
-   string registry=Path.Combine(folder,"ExtensionsRegistry.xml"),destination=Path.Combine(folder,"installed");Directory.CreateDirectory(destination);
+   string registry=Path.Combine(folder,"ExtensionsRegistry.xml"),destination=Path.Combine(folder,"fresh-profile","Altium","SchLibSearchPaths");
    File.WriteAllText(registry,"<Extensions><Item HRID=\"ExistingPlugin\"><Path>unchanged</Path></Item></Extensions>");
+   var target=new Target{RegistryPath=registry,DisplayName="Test"};
+   Apply(target,destination,false);
+   foreach(string file in Files)if(!File.Exists(Path.Combine(destination,file)))throw new Exception("Fresh installation payload missing.");
    File.WriteAllText(Path.Combine(destination,"state.json"),"{\"Enabled\":false,\"OwnedLibraries\":[]}");
-   string stateHash=Hash(File.ReadAllBytes(Path.Combine(destination,"state.json")));var target=new Target{RegistryPath=registry,DisplayName="Test"};
+   string stateHash=Hash(File.ReadAllBytes(Path.Combine(destination,"state.json")));
    Apply(target,destination,false);Apply(target,destination,false);var doc=XDocument.Load(registry);
    byte[] registryBytes=File.ReadAllBytes(registry);if(registryBytes.Length>2&&registryBytes[0]==239&&registryBytes[1]==187&&registryBytes[2]==191)throw new Exception("Altium registry must use UTF-8 without a BOM.");
    if(Directory.GetFiles(destination,"*.ins",SearchOption.AllDirectories).Length!=1)throw new Exception("Backup registrations leaked into the live extension folder.");
@@ -107,7 +111,7 @@ namespace LibrarySearchPathsSetup {
    bool blocked=false;try{Apply(target,destination,true);}catch(InvalidOperationException){blocked=true;}if(!blocked)throw new Exception("Unsafe uninstall was not blocked.");
    File.WriteAllText(Path.Combine(destination,"state.json"),"{\"Enabled\":false,\"OwnedLibraries\":[]}");Apply(target,destination,true);doc=XDocument.Load(registry);
    if(doc.Root.Elements("Item").Any(e=>(string)e.Attribute("HRID")==Hrid)||doc.Root.Elements("Item").Count()!=1)throw new Exception("Uninstall preservation failed.");
-   File.WriteAllText(Path.Combine(folder,"result.txt"),"PASS: payload integrity, install, idempotent upgrade, existing extension preservation, state preservation, owned-registration uninstall guard, clean unregister.");
+   File.WriteAllText(Path.Combine(folder,"result.txt"),"PASS: payload integrity, fresh installation with missing parent folders, install, idempotent upgrade, existing extension preservation, state preservation, owned-registration uninstall guard, clean unregister.");
   }
  }
  internal sealed class SetupForm:Form {
